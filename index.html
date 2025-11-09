@@ -4,52 +4,62 @@
   <meta charset="UTF-8">
   <title>IoT Incubator Monitor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     body {
-      font-family: 'Poppins', 'Segoe UI', sans-serif;
-      background-color: #f4f8fb;
+      font-family: 'Poppins', sans-serif;
       margin: 0;
-      padding: 0;
+      background-color: #f7f9fc;
       display: flex;
       justify-content: center;
+      align-items: center;
       height: 100vh;
     }
 
     .app-container {
       width: 100%;
       max-width: 420px;
-      height: 100vh;
-      background-color: white;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 0 12px rgba(0,0,0,0.2);
-      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(90deg, #64b5f6, #2196f3);
+      color: #fff;
+      text-align: center;
+      padding: 18px;
+      font-weight: 600;
+      font-size: 20px;
+      letter-spacing: 0.5px;
     }
 
     #loading-screen {
       flex: 1;
-      background: linear-gradient(135deg, #bbdefb, #90caf9);
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #bbdefb, #90caf9);
+      color: #0d47a1;
     }
 
-    .loading-spinner {
-      height: 100px;
-      width: 100px;
+    .spinner {
+      height: 90px;
+      width: 90px;
       border-radius: 50%;
       background: linear-gradient(45deg, #64b5f6, #1976d2);
       display: flex;
       align-items: center;
       justify-content: center;
-      animation: spin 2s linear infinite;
+      animation: spin 1.8s linear infinite;
       box-shadow: 0 0 20px rgba(25,118,210,0.3);
-      color: white;
       font-size: 40px;
+      color: #fff;
     }
 
     @keyframes spin {
@@ -57,123 +67,109 @@
       to { transform: rotate(360deg); }
     }
 
-    #loading-status {
-      color: #333;
-      margin-top: 20px;
-      font-size: 16px;
-    }
-
     #dashboard {
       display: none;
       flex: 1;
-      background-color: #f4f8fb;
-      overflow-y: auto;
-    }
-
-    header {
-      background: linear-gradient(90deg, #64b5f6, #2196f3);
-      padding: 16px;
-      text-align: center;
-      font-weight: 600;
-      font-size: 20px;
-      color: #fff;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      flex-direction: column;
     }
 
     #image-section {
-      position: relative;
-      background-color: #e3f2fd;
       width: 100%;
-      height: 220px;
+      height: 200px;
+      background-color: #e3f2fd;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
     }
 
-    #image-section img {
+    #camera-image {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: none;
     }
 
     #sensor-cards {
       padding: 16px;
+      flex: 1;
+      overflow-y: auto;
     }
 
     .sensor-card {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: white;
+      background-color: #ffffff;
       margin-bottom: 14px;
-      padding: 18px;
+      padding: 16px;
       border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .sensor-card:hover {
       transform: scale(1.02);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     }
 
     .sensor-info {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
     .sensor-icon {
-      font-size: 28px;
+      font-size: 26px;
     }
 
     .sensor-title {
       font-weight: 600;
-      font-size: 16px;
+      font-size: 15px;
       color: #333;
     }
 
     .sensor-value {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
-      margin-top: 4px;
+      color: #2196f3;
     }
 
     .status-tag {
+      background-color: #e3f2fd;
       padding: 6px 10px;
       border-radius: 8px;
       font-weight: 600;
       font-size: 13px;
-      background-color: #e3f2fd;
     }
 
     .last-updated {
       text-align: center;
-      color: #666;
       font-size: 13px;
+      color: #777;
       margin-top: 10px;
-      margin-bottom: 10px;
     }
 
-    #no-image {
-      color: #777;
-      font-size: 15px;
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      padding: 8px;
+      background-color: #fafafa;
     }
 
     @media (max-width: 400px) {
       .sensor-value { font-size: 18px; }
-      .sensor-title { font-size: 14px; }
+      .sensor-title { font-size: 13px; }
     }
   </style>
 </head>
+
 <body>
   <div class="app-container">
     <div id="loading-screen">
-      <div class="loading-spinner">📡</div>
-      <h2 style="margin-top: 20px; color: #0d47a1;">Incubator Monitoring</h2>
-      <p id="loading-status">Connecting to backend...</p>
+      <div class="spinner">📡</div>
+      <h2 style="margin-top: 20px;">Connecting to Backend...</h2>
     </div>
 
     <div id="dashboard">
@@ -181,135 +177,118 @@
 
       <div id="image-section">
         <p id="no-image">No Image Available</p>
-        <img id="camera-image" style="display:none;">
+        <img id="camera-image">
       </div>
 
       <div id="sensor-cards">
-        <div id="temperature" class="sensor-card"></div>
-        <div id="humidity" class="sensor-card"></div>
-        <div id="water-level" class="sensor-card"></div>
+        <div id="temp-card" class="sensor-card"></div>
+        <div id="hum-card" class="sensor-card"></div>
+        <div id="water-card" class="sensor-card"></div>
+        <div id="days-card" class="sensor-card"></div>
         <div class="last-updated" id="last-updated">Last updated: --:--:--</div>
       </div>
+
+      <footer>&copy; 2025 IoT Incubator Monitor</footer>
     </div>
   </div>
 
   <script>
-  const backendWebsocket = "wss://incubator-tvu1.onrender.com/ws";
-  let socket;
-  let connected = false;
+    const backendWebsocket = "wss://incubator-tvu1.onrender.com/ws";
+    let socket;
+    let connected = false;
 
-  const loadingScreen = document.getElementById("loading-screen");
-  const dashboard = document.getElementById("dashboard");
-  const loadingStatus = document.getElementById("loading-status");
+    const loadingScreen = document.getElementById("loading-screen");
+    const dashboard = document.getElementById("dashboard");
+    const noImage = document.getElementById("no-image");
+    const cameraImage = document.getElementById("camera-image");
+    const tempCard = document.getElementById("temp-card");
+    const humCard = document.getElementById("hum-card");
+    const waterCard = document.getElementById("water-card");
+    const daysCard = document.getElementById("days-card");
+    const lastUpdated = document.getElementById("last-updated");
 
-  const tempCard = document.getElementById("temperature");
-  const humCard = document.getElementById("humidity");
-  const waterCard = document.getElementById("water-level");
-  const lastUpdatedEl = document.getElementById("last-updated");
-  const cameraImage = document.getElementById("camera-image");
-  const noImage = document.getElementById("no-image");
+    function connect() {
+      socket = new WebSocket(backendWebsocket);
 
-  function setInitialDisplay() {
-    tempCard.innerHTML = makeSensorHTML("🌡️", "Temperature", "-- °C", "Waiting...", "#888");
-    humCard.innerHTML = makeSensorHTML("💧", "Humidity", "-- %", "Waiting...", "#888");
-    waterCard.innerHTML = makeSensorHTML("🚰", "Water Level", "-- %", "Waiting...", "#888");
-    cameraImage.style.display = "none";
-    noImage.style.display = "block";
-    lastUpdatedEl.textContent = "Last updated: Waiting for data...";
-  }
-
-  function connect() {
-    socket = new WebSocket(backendWebsocket);
-
-    socket.onopen = () => {
-      connected = true;
-      loadingStatus.textContent = "Connected! Launching dashboard...";
-      setTimeout(() => {
+      socket.onopen = () => {
+        connected = true;
         loadingScreen.style.display = "none";
         dashboard.style.display = "flex";
-        dashboard.style.flexDirection = "column";
-      }, 1000);
 
-      setInterval(() => {
-        if (connected) socket.send("ping");
-      }, 20000);
-    };
+        setInterval(() => {
+          if (connected) socket.send("ping");
+        }, 20000);
+      };
 
-    socket.onmessage = (msg) => {
-      if (msg.data === "pong" || msg.data === "ping") return;
+      socket.onmessage = (event) => {
+        if (event.data === "pong" || event.data === "ping") return;
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "sensor_data") updateDashboard(data);
+        } catch (e) {
+          console.error("JSON parse error:", e);
+        }
+      };
 
-      try {
-        const data = JSON.parse(msg.data);
-        if (data.type === "sensor_data") updateDashboard(data);
-      } catch (e) {
-        console.error("JSON parse error:", e);
-      }
-    };
-
-    socket.onerror = () => {
-      connected = false;
-      retryConnection();
-    };
-
-    socket.onclose = () => {
-      connected = false;
-      retryConnection();
-    };
-  }
-
-  function retryConnection() {
-    loadingScreen.style.display = "flex";
-    dashboard.style.display = "none";
-    loadingStatus.textContent = "Reconnecting...";
-    setTimeout(connect, 3000);
-  }
-
-  function updateDashboard(data) {
-    const temperature = parseFloat(data.temperature ?? 0);
-    const humidity = parseFloat(data.humidity ?? 0);
-    const waterLevel = parseFloat(data.water_level ?? 0);
-
-    const tempStatus = temperature > 38 ? "High" : temperature < 35 ? "Low" : "Normal";
-    const tempColor = temperature > 38 ? "#d32f2f" : temperature < 35 ? "#f57c00" : "#43a047";
-    tempCard.innerHTML = makeSensorHTML("🌡️", "Temperature", `${temperature.toFixed(1)}°C`, tempStatus, tempColor);
-
-    const humStatus = humidity > 70 ? "High" : humidity < 40 ? "Low" : "OK";
-    const humColor = humidity > 70 ? "#d32f2f" : humidity < 40 ? "#f57c00" : "#0288d1";
-    humCard.innerHTML = makeSensorHTML("💧", "Humidity", `${humidity.toFixed(1)}%`, humStatus, humColor);
-
-    const waterStatus = waterLevel <= 30 ? "Need Water" : "OK";
-    const waterColor = waterLevel <= 30 ? "#d32f2f" : "#1565c0";
-    waterCard.innerHTML = makeSensorHTML("🚰", "Water Level", `${waterLevel.toFixed(1)}%`, waterStatus, waterColor);
-
-    if (data.image && data.image.length > 0) {
-      noImage.style.display = "none";
-      cameraImage.style.display = "block";
-      cameraImage.src = "data:image/jpeg;base64," + data.image;
-    } else if (!cameraImage.src) {
-      cameraImage.style.display = "none";
-      noImage.style.display = "block";
+      socket.onerror = () => reconnect();
+      socket.onclose = () => reconnect();
     }
 
-    const now = new Date();
-    lastUpdatedEl.textContent = `Last updated: ${now.toLocaleTimeString()}`;
-  }
+    function reconnect() {
+      connected = false;
+      dashboard.style.display = "none";
+      loadingScreen.style.display = "flex";
+      setTimeout(connect, 3000);
+    }
 
-  function makeSensorHTML(icon, title, value, status, color) {
-    return `
-      <div class="sensor-info">
-        <span class="sensor-icon" style="color:${color}">${icon}</span>
-        <div>
-          <div class="sensor-title">${title}</div>
-          <div class="sensor-value" style="color:${color}">${value}</div>
+    function updateDashboard(data) {
+      const t = parseFloat(data.temperature ?? 0);
+      const h = parseFloat(data.humidity ?? 0);
+      const w = parseFloat(data.water_level ?? 0);
+      const d = parseInt(data.days ?? 0);
+
+      tempCard.innerHTML = makeSensorCard("🌡️", "Temperature", `${t.toFixed(1)}°C`,
+        t > 38 ? "High" : t < 35 ? "Low" : "Normal",
+        t > 38 ? "#d32f2f" : t < 35 ? "#f57c00" : "#43a047");
+
+      humCard.innerHTML = makeSensorCard("💧", "Humidity", `${h.toFixed(1)}%`,
+        h > 70 ? "High" : h < 40 ? "Low" : "OK",
+        h > 70 ? "#d32f2f" : h < 40 ? "#f57c00" : "#0288d1");
+
+      waterCard.innerHTML = makeSensorCard("🚰", "Water Level", w === 1 ? "Present" : "Refill",
+        w === 1 ? "OK" : "Empty",
+        w === 1 ? "#1565c0" : "#d32f2f");
+
+      daysCard.innerHTML = makeSensorCard("📅", "Days Incubating", `${d} days`,
+        d > 0 ? "Running" : "Idle",
+        d > 0 ? "#7b1fa2" : "#757575");
+
+      if (data.image && data.image.length > 0) {
+        noImage.style.display = "none";
+        cameraImage.style.display = "block";
+        cameraImage.src = "data:image/jpeg;base64," + data.image;
+      } else {
+        noImage.style.display = "block";
+        cameraImage.style.display = "none";
+      }
+
+      lastUpdated.textContent = "Last updated: " + new Date().toLocaleTimeString();
+    }
+
+    function makeSensorCard(icon, title, value, status, color) {
+      return `
+        <div class="sensor-info">
+          <span class="sensor-icon" style="color:${color}">${icon}</span>
+          <div>
+            <div class="sensor-title">${title}</div>
+            <div class="sensor-value" style="color:${color}">${value}</div>
+          </div>
         </div>
-      </div>
-      <div class="status-tag" style="color:${color}">${status}</div>
-    `;
-  }
+        <div class="status-tag" style="color:${color}">${status}</div>
+      `;
+    }
 
-  setInitialDisplay();
-  connect();
-</script>
-
+    connect();
+  </script>
 </body>
 </html>
