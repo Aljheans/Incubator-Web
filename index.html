@@ -13,8 +13,8 @@
     .spinner { height: 90px; width: 90px; border-radius: 50%; background: linear-gradient(45deg, #64b5f6, #1976d2); display: flex; align-items: center; justify-content: center; animation: spin 1.8s linear infinite; box-shadow: 0 0 20px rgba(25,118,210,0.3); font-size: 40px; color: #fff; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     #dashboard { display: none; flex: 1; flex-direction: column; }
-    #image-section { width: 100%; height: 200px; background-color: #e3f2fd; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-direction: column; }
-    #camera-image { width: 100%; height: 100%; object-fit: cover; display: none; }
+    #image-section { width: 100%; height: 200px; background-color: #e3f2fd; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-direction: column; padding: 10px; box-sizing: border-box; }
+    #camera-image { width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 8px; }
     #sensor-cards { padding: 16px; flex: 1; overflow-y: auto; }
     .sensor-card { display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; margin-bottom: 14px; padding: 16px; border-radius: 16px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .sensor-card:hover { transform: scale(1.02); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
@@ -25,7 +25,9 @@
     .status-tag { background-color: #e3f2fd; padding: 6px 10px; border-radius: 8px; font-weight: 600; font-size: 13px; }
     .last-updated { text-align: center; font-size: 13px; color: #777; margin-top: 10px; }
     footer { text-align: center; font-size: 12px; color: #aaa; padding: 8px; background-color: #fafafa; }
-    select { margin-top: 10px; padding: 6px 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
+    button { padding: 6px 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; cursor: pointer; transition: all 0.2s ease; }
+    button:hover { opacity: 0.9; }
+    @media (max-width: 400px) { .sensor-value { font-size: 18px; } .sensor-title { font-size: 13px; } button { padding: 5px 10px; font-size: 12px; } }
   </style>
 </head>
 <body>
@@ -41,10 +43,10 @@
       <div id="image-section">
         <p id="no-image">No Image Available</p>
         <img id="camera-image">
-        <select id="cam-toggle">
-          <option value="1">ESP32-1 Camera</option>
-          <option value="cam2">ESP32-2 Camera</option>
-        </select>
+        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+          <button id="btn-cam1">ESP32-1 Camera</button>
+          <button id="btn-cam2">ESP32-2 Camera</button>
+        </div>
       </div>
 
       <div id="sensor-cards">
@@ -64,13 +66,12 @@
     let socket;
     let connected = false;
     let devices = {}; // Store latest data for each cam_id
-    let selectedCam = "1";
+    let selectedCam = "1"; // default camera
 
     const loadingScreen = document.getElementById("loading-screen");
     const dashboard = document.getElementById("dashboard");
     const noImage = document.getElementById("no-image");
     const cameraImage = document.getElementById("camera-image");
-    const camToggle = document.getElementById("cam-toggle");
 
     const tempCard = document.getElementById("temp-card");
     const humCard = document.getElementById("hum-card");
@@ -78,10 +79,27 @@
     const daysCard = document.getElementById("days-card");
     const lastUpdated = document.getElementById("last-updated");
 
-    camToggle.addEventListener("change", () => {
-      selectedCam = camToggle.value;
+    // Buttons for camera toggle
+    const btnCam1 = document.getElementById("btn-cam1");
+    const btnCam2 = document.getElementById("btn-cam2");
+
+    btnCam1.addEventListener("click", () => {
+      selectedCam = "1";
       updateCameraImage();
+      btnCam1.style.backgroundColor = "#2196f3"; btnCam1.style.color = "#fff";
+      btnCam2.style.backgroundColor = ""; btnCam2.style.color = "";
     });
+
+    btnCam2.addEventListener("click", () => {
+      selectedCam = "cam2";
+      updateCameraImage();
+      btnCam2.style.backgroundColor = "#2196f3"; btnCam2.style.color = "#fff";
+      btnCam1.style.backgroundColor = ""; btnCam1.style.color = "";
+    });
+
+    // Initialize button styles
+    btnCam1.style.backgroundColor = "#2196f3";
+    btnCam1.style.color = "#fff";
 
     function connect() {
       socket = new WebSocket(backendWebsocket);
@@ -102,9 +120,7 @@
             devices[data.cam_id] = data;
             updateDashboard();
           }
-        } catch (e) {
-          console.error("JSON parse error:", e);
-        }
+        } catch (e) { console.error("JSON parse error:", e); }
       };
 
       socket.onerror = () => reconnect();
@@ -119,7 +135,6 @@
     }
 
     function updateDashboard() {
-      // Update sensor cards using first ESP32 (cam_id=1) if available
       const data1 = devices["1"] || {};
       const t = parseFloat(data1.temperature ?? 0);
       const h = parseFloat(data1.humidity ?? 0);
