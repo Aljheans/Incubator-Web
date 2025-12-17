@@ -13,7 +13,7 @@
     .spinner { height: 90px; width: 90px; border-radius: 50%; background: linear-gradient(45deg, #64b5f6, #1976d2); display: flex; align-items: center; justify-content: center; animation: spin 1.8s linear infinite; box-shadow: 0 0 20px rgba(25,118,210,0.3); font-size: 40px; color: #fff; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     #dashboard { display: none; flex: 1; flex-direction: column; }
-    #image-section { width: 100%; height: 200px; background-color: #e3f2fd; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-direction: column; padding: 10px; box-sizing: border-box; }
+    #image-section { position: relative; width: 100%; height: 200px; background-color: #e3f2fd; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-direction: column; padding: 10px; box-sizing: border-box; }
     #camera-image { width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 8px; }
     #sensor-cards { padding: 16px; flex: 1; overflow-y: auto; }
     .sensor-card { display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; margin-bottom: 14px; padding: 16px; border-radius: 16px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); transition: transform 0.2s ease, box-shadow 0.2s ease; }
@@ -41,12 +41,12 @@
       <header>IoT Incubator Monitor</header>
 
       <div id="image-section">
-        <p id="no-image">No Image Available</p>
-        <img id="camera-image">
-        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+        <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;">
           <button id="btn-cam1">ESP32-1 Camera</button>
           <button id="btn-cam2">ESP32-2 Camera</button>
         </div>
+        <p id="no-image">No Image Available</p>
+        <img id="camera-image">
       </div>
 
       <div id="sensor-cards">
@@ -65,8 +65,8 @@
     const backendWebsocket = "wss://incubator-whue.onrender.com/ws";
     let socket;
     let connected = false;
-    let devices = {}; // Store latest data for each cam_id
-    let selectedCam = "1"; // default camera
+    let devices = {};
+    let selectedCam = "1";
 
     const loadingScreen = document.getElementById("loading-screen");
     const dashboard = document.getElementById("dashboard");
@@ -78,8 +78,6 @@
     const waterCard = document.getElementById("water-card");
     const daysCard = document.getElementById("days-card");
     const lastUpdated = document.getElementById("last-updated");
-
-    // Buttons for camera toggle
     const btnCam1 = document.getElementById("btn-cam1");
     const btnCam2 = document.getElementById("btn-cam2");
 
