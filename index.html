@@ -32,7 +32,6 @@
       padding: 18px;
       font-weight: 600;
       font-size: 20px;
-      letter-spacing: 0.5px;
     }
     #loading-screen {
       flex: 1;
@@ -52,32 +51,31 @@
       align-items: center;
       justify-content: center;
       animation: spin 1.8s linear infinite;
-      box-shadow: 0 0 20px rgba(25,118,210,0.3);
       font-size: 40px;
       color: #fff;
     }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     #dashboard { display: none; flex: 1; flex-direction: column; }
-    
+
     #camera-buttons {
       padding: 10px;
       display: flex;
-      justify-content: center;
       gap: 10px;
+      overflow-x: auto;
       background-color: #e3f2fd;
     }
     #camera-buttons button {
+      flex-shrink: 0;
       padding: 6px 12px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
-      transition: all 0.2s ease;
       font-weight: 600;
+      background: #bbdefb;
     }
 
     #image-section {
-      position: relative;
       width: 100%;
       height: 200px;
       background-color: #e3f2fd;
@@ -93,9 +91,8 @@
       height: 100%;
       object-fit: cover;
       display: none;
-      border-radius: 8px;
     }
-    #no-image { text-align: center; color: #555; }
+    #no-image { color: #555; }
 
     #sensor-cards {
       padding: 16px;
@@ -111,173 +108,147 @@
       padding: 16px;
       border-radius: 16px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .sensor-card:hover { transform: scale(1.02); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
     .sensor-info { display: flex; align-items: center; gap: 12px; }
     .sensor-icon { font-size: 26px; }
-    .sensor-title { font-weight: 600; font-size: 15px; color: #333; }
-    .sensor-value { font-size: 20px; font-weight: bold; color: #2196f3; }
-    .status-tag { background-color: #e3f2fd; padding: 6px 10px; border-radius: 8px; font-weight: 600; font-size: 13px; }
+    .sensor-title { font-weight: 600; font-size: 15px; }
+    .sensor-value { font-size: 20px; font-weight: bold; }
+    .status-tag { padding: 6px 10px; border-radius: 8px; font-weight: 600; font-size: 13px; }
     .last-updated { text-align: center; font-size: 13px; color: #777; margin-top: 10px; }
-    footer { text-align: center; font-size: 12px; color: #aaa; padding: 8px; background-color: #fafafa; }
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 8px; }
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <div id="loading-screen">
-      <div class="spinner">📡</div>
-      <h2 style="margin-top: 20px;">Connecting to Backend...</h2>
-    </div>
+<div class="app-container">
 
-    <div id="dashboard">
-      <header>IoT Incubator Monitor</header>
-
-      <div id="camera-buttons">
-        <button id="btn-cam1">Camera 1</button>
-        <button id="btn-cam2">Camera 2</button>
-      </div>
-
-      <div id="image-section">
-        <p id="no-image">No Image Available</p>
-        <img id="camera-image">
-      </div>
-
-      <div id="sensor-cards">
-        <div id="temp-card" class="sensor-card"></div>
-        <div id="hum-card" class="sensor-card"></div>
-        <div id="water-card" class="sensor-card"></div>
-        <div id="days-card" class="sensor-card"></div>
-        <div class="last-updated" id="last-updated">Last updated: --:--:--</div>
-      </div>
-
-      <footer>&copy; 2025 IoT Incubator Monitor</footer>
-    </div>
+  <div id="loading-screen">
+    <div class="spinner">📡</div>
+    <h2>Connecting to Backend...</h2>
   </div>
 
-  <script>
-    const backendWebsocket = "wss://incubator-whue.onrender.com/ws";
-    let socket;
-    let connected = false;
-    let devices = {};
-    let selectedCam = "1";
+  <div id="dashboard">
+    <header>IoT Incubator Monitor</header>
 
-    const loadingScreen = document.getElementById("loading-screen");
-    const dashboard = document.getElementById("dashboard");
-    const noImage = document.getElementById("no-image");
-    const cameraImage = document.getElementById("camera-image");
+    <div id="camera-buttons">
+      <button id="btn-cam1">Top Right</button>
+      <button id="btn-cam2">Bottom Right</button>
+      <button id="btn-cam3">Top Left</button>
+      <button id="btn-cam4">Bottom Left</button>
+    </div>
 
-    const tempCard = document.getElementById("temp-card");
-    const humCard = document.getElementById("hum-card");
-    const waterCard = document.getElementById("water-card");
-    const daysCard = document.getElementById("days-card");
-    const lastUpdated = document.getElementById("last-updated");
+    <div id="image-section">
+      <p id="no-image">No Image Available</p>
+      <img id="camera-image">
+    </div>
 
-    const btnCam1 = document.getElementById("btn-cam1");
-    const btnCam2 = document.getElementById("btn-cam2");
+    <div id="sensor-cards">
+      <div id="temp-card" class="sensor-card"></div>
+      <div id="hum-card" class="sensor-card"></div>
+      <div id="water-card" class="sensor-card"></div>
+      <div id="days-card" class="sensor-card"></div>
+      <div class="last-updated" id="last-updated">Last updated: --:--:--</div>
+    </div>
 
-    btnCam1.addEventListener("click", () => {
-      selectedCam = "1";
+    <footer>&copy; 2025 IoT Incubator Monitor</footer>
+  </div>
+</div>
+
+<script>
+  const backendWebsocket = "wss://incubator-whue.onrender.com/ws";
+  let socket;
+  let devices = {};
+  let selectedCam = "1";
+
+  const loadingScreen = document.getElementById("loading-screen");
+  const dashboard = document.getElementById("dashboard");
+  const cameraImage = document.getElementById("camera-image");
+  const noImage = document.getElementById("no-image");
+
+  const buttons = {
+    "1": document.getElementById("btn-cam1"),
+    "cam2": document.getElementById("btn-cam2"),
+    "cam3": document.getElementById("btn-cam3"),
+    "cam4": document.getElementById("btn-cam4")
+  };
+
+  Object.keys(buttons).forEach(cam => {
+    buttons[cam].onclick = () => {
+      selectedCam = cam;
+      highlightButton();
       updateCameraImage();
-      btnCam1.style.backgroundColor = "#2196f3"; btnCam1.style.color = "#fff";
-      btnCam2.style.backgroundColor = ""; btnCam2.style.color = "";
+    };
+  });
+
+  function highlightButton() {
+    Object.keys(buttons).forEach(c => {
+      buttons[c].style.background = c === selectedCam ? "#2196f3" : "#bbdefb";
+      buttons[c].style.color = c === selectedCam ? "#fff" : "#000";
     });
+  }
 
-    btnCam2.addEventListener("click", () => {
-      selectedCam = "cam2";
-      updateCameraImage();
-      btnCam2.style.backgroundColor = "#2196f3"; btnCam2.style.color = "#fff";
-      btnCam1.style.backgroundColor = ""; btnCam1.style.color = "";
-    });
+  function connect() {
+    socket = new WebSocket(backendWebsocket);
 
-    // Initialize button style
-    btnCam1.style.backgroundColor = "#2196f3"; btnCam1.style.color = "#fff";
+    socket.onopen = () => {
+      loadingScreen.style.display = "none";
+      dashboard.style.display = "flex";
+      highlightButton();
+      setInterval(() => socket.send("ping"), 20000);
+    };
 
-    function connect() {
-      socket = new WebSocket(backendWebsocket);
+    socket.onmessage = (event) => {
+      if (event.data === "ping" || event.data === "pong") return;
+      try {
+        const data = JSON.parse(event.data);
+        devices[data.cam_id] = data;
+        updateDashboard();
+      } catch {}
+    };
 
-      socket.onopen = () => {
-        connected = true;
-        loadingScreen.style.display = "none";
-        dashboard.style.display = "flex";
-        setInterval(() => { if (connected) socket.send("ping"); }, 20000);
-      };
+    socket.onclose = reconnect;
+    socket.onerror = reconnect;
+  }
 
-      socket.onmessage = (event) => {
-        if (event.data === "pong" || event.data === "ping") return;
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === "sensor_data" && data.cam_id) {
-            devices[data.cam_id] = data;
-            updateDashboard();
-          }
-        } catch (e) { console.error("JSON parse error:", e); }
-      };
+  function reconnect() {
+    dashboard.style.display = "none";
+    loadingScreen.style.display = "flex";
+    setTimeout(connect, 3000);
+  }
 
-      socket.onerror = () => reconnect();
-      socket.onclose = () => reconnect();
+  function updateDashboard() {
+    const d = devices["1"] || {};
+    document.getElementById("temp-card").innerHTML = makeCard("🌡️", "Temperature", `${(d.temperature||0).toFixed(1)}°C`);
+    document.getElementById("hum-card").innerHTML = makeCard("💧", "Humidity", `${(d.humidity||0).toFixed(1)}%`);
+    document.getElementById("water-card").innerHTML = makeCard("🚰", "Water Level", d.water_level==0?"Present":"Refill");
+    document.getElementById("days-card").innerHTML = makeCard("📅", "Days", `${d.days||0}`);
+    document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString();
+    updateCameraImage();
+  }
+
+  function updateCameraImage() {
+    const cam = devices[selectedCam];
+    if (cam && cam.image) {
+      cameraImage.src = "data:image/jpeg;base64," + cam.image;
+      cameraImage.style.display = "block";
+      noImage.style.display = "none";
+    } else {
+      cameraImage.style.display = "none";
+      noImage.style.display = "block";
     }
+  }
 
-    function reconnect() {
-      connected = false;
-      dashboard.style.display = "none";
-      loadingScreen.style.display = "flex";
-      setTimeout(connect, 3000);
-    }
-
-    function updateDashboard() {
-      const data1 = devices["1"] || {};
-      const t = parseFloat(data1.temperature ?? 0);
-      const h = parseFloat(data1.humidity ?? 0);
-      const w = parseFloat(data1.water_level ?? 0);
-      const d = parseInt(data1.days ?? 0);
-
-      tempCard.innerHTML = makeSensorCard("🌡️", "Temperature", `${t.toFixed(1)}°C`,
-        t > 38 ? "High" : t < 37.5 ? "Low" : "Normal",
-        t > 38 ? "#d32f2f" : t < 37.5 ? "#f57c00" : "#43a047");
-
-      humCard.innerHTML = makeSensorCard("💧", "Humidity", `${h.toFixed(1)}%`,
-        h > 70 ? "High" : h < 40 ? "Low" : "OK",
-        h > 70 ? "#d32f2f" : h < 40 ? "#f57c00" : "#0288d1");
-
-      waterCard.innerHTML = makeSensorCard("🚰", "Water Level", w === 0 ? "Present" : "Refill",
-        w === 0 ? "OK" : "Empty",
-        w === 0 ? "#1565c0" : "#d32f2f");
-
-      daysCard.innerHTML = makeSensorCard("📅", "Days Incubating", `${d} days`,
-        d > 0 ? "Running" : "Idle",
-        d > 0 ? "#7b1fa2" : "#757575");
-
-      updateCameraImage();
-      lastUpdated.textContent = "Last updated: " + new Date().toLocaleTimeString();
-    }
-
-    function updateCameraImage() {
-      const camData = devices[selectedCam];
-      if (camData && camData.image && camData.image.length > 0) {
-        noImage.style.display = "none";
-        cameraImage.style.display = "block";
-        cameraImage.src = "data:image/jpeg;base64," + camData.image;
-      } else {
-        noImage.style.display = "block";
-        cameraImage.style.display = "none";
-      }
-    }
-
-    function makeSensorCard(icon, title, value, status, color) {
-      return `
-        <div class="sensor-info">
-          <span class="sensor-icon" style="color:${color}">${icon}</span>
-          <div>
-            <div class="sensor-title">${title}</div>
-            <div class="sensor-value" style="color:${color}">${value}</div>
-          </div>
+  function makeCard(icon, title, value) {
+    return `
+      <div class="sensor-info">
+        <span class="sensor-icon">${icon}</span>
+        <div>
+          <div class="sensor-title">${title}</div>
+          <div class="sensor-value">${value}</div>
         </div>
-        <div class="status-tag" style="color:${color}">${status}</div>
-      `;
-    }
+      </div>`;
+  }
 
-    connect();
-  </script>
+  connect();
+</script>
 </body>
 </html>
